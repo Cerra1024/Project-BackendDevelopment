@@ -43,4 +43,36 @@ router.post("/projects/:projectId/tasks", protect, async (req, res) => {
   }
 });
 
+// Get tasks for a project
+router.get("/projects/:projectId/tasks", protect, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.projectId);
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found",
+      });
+    }
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Not authorized",
+      });
+    }
+
+    const tasks = await Task.find({
+      project: project._id,
+    });
+
+    res.json(tasks);
+  } catch (error) {
+    console.error("GET TASKS ERROR:");
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;
