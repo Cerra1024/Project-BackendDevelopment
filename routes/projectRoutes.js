@@ -5,9 +5,22 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// TEMPORARY TEST ROUTE
-router.get("/", (req, res) => {
-  res.json({ message: "Project routes working" });
+// Get all projects for logged-in user
+router.get("/", protect, async (req, res) => {
+  try {
+    const projects = await Project.find({
+      user: req.user._id,
+    });
+
+    res.json(projects);
+  } catch (error) {
+    console.error("GET PROJECTS ERROR:");
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 // Create project
