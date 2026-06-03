@@ -75,4 +75,40 @@ router.get("/projects/:projectId/tasks", protect, async (req, res) => {
   }
 });
 
+// Update task
+router.put("/:taskId", protect, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.taskId);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    const project = await Project.findById(task.project);
+
+    if (project.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Not authorized",
+      });
+    }
+
+    task.title = req.body.title || task.title;
+    task.description = req.body.description || task.description;
+    task.status = req.body.status || task.status;
+
+    const updatedTask = await task.save();
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error("UPDATE TASK ERROR:");
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;
